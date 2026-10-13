@@ -1,493 +1,802 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Smorelore</title>
-  <meta name="description" content="What Smorelore is: a state of mind. Campfires, simple things, and carrying that back to how software gets made.">
-  <meta name="color-scheme" content="dark">
-  <link rel="stylesheet" href="/style.css">
-  <style>
-    /* This page is always dark, whatever the system setting. */
-    :root {
-      color-scheme: dark;
-      --ground: #0f1a21;
-      --card: #17242d;
-      --ink: #e8f1f7;
-      --muted: #a3b4bf;
-      --rule: #2a3b47;
-      --accent: #7db7f0;
-    }
-
-    .verse { margin-bottom: 22px; }
-
-    .fire {
-      position: relative;
-      height: 220px;
-      margin: 0 -16px 32px;
-      overflow: hidden;
-      background: linear-gradient(#0b1622, #1a2633 70%, #2b2420);
-      border-radius: 0 0 24px 24px;
-    }
-    .fire .glow {
-      position: absolute;
-      left: 50%; bottom: -60px;
-      width: 260px; height: 160px;
-      transform: translateX(-50%);
-      background: radial-gradient(closest-side, rgba(255,160,60,.55), rgba(255,110,40,.15) 60%, transparent);
-      animation: flicker 3.2s ease-in-out infinite;
-    }
-    .fire .ember {
-      position: absolute;
-      bottom: 10px;
-      width: 3px; height: 3px;
-      border-radius: 50%;
-      background: #ffb35c;
-      box-shadow: 0 0 6px #ff8a3d;
-      opacity: 0;
-      animation: rise 6s linear infinite;
-    }
-    .fire .star {
-      position: absolute;
-      width: 2px; height: 2px;
-      border-radius: 50%;
-      background: #dfe9f3;
-      opacity: .7;
-    }
-    @keyframes rise {
-      0%   { transform: translate(0, 0); opacity: 0; }
-      10%  { opacity: 1; }
-      100% { transform: translate(var(--drift, 12px), -170px); opacity: 0; }
-    }
-    @keyframes flicker {
-      0%, 100% { opacity: .85; }
-      40% { opacity: 1; }
-      70% { opacity: .75; }
-    }
-    .fire .layer {
-      position: absolute;
-      inset: 0;
-      will-change: transform;
-    }
-    .fire svg {
-      position: absolute;
-      left: 0; bottom: 0;
-      width: 100%;
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .fire .glow, .fire .ember { animation: none; }
-    }
-
-    .kicker {
-      font-size: 13px;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
-    .pull {
-      font-size: 21px;
-      line-height: 1.45;
-      margin: 28px 0;
-      padding-left: 16px;
-      border-left: 3px solid var(--accent);
-    }
-    .drift {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      overflow: hidden;
-      z-index: 0;
-    }
-    .drift .sky { position: absolute; left: 0; right: 0; top: 0; will-change: transform; }
-    .drift i {
-      position: absolute;
-      border-radius: 50%;
-      background: #ffb35c;
-    }
-    .drift .near i { box-shadow: 0 0 8px #ff8a3d; }
-    .sparks {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      overflow: hidden;
-      z-index: 2;
-    }
-    .sparks i {
-      position: absolute;
-      bottom: -10px;
-      width: 3px; height: 3px;
-      border-radius: 50%;
-      background: #ffb35c;
-      box-shadow: 0 0 8px #ff8a3d;
-      opacity: 0;
-      animation: float-up var(--dur, 18s) linear infinite;
-    }
-    @keyframes float-up {
-      0%   { transform: translate(0, 0); opacity: 0; }
-      8%   { opacity: .8; }
-      50%  { transform: translate(var(--drift, 30px), -55vh); }
-      75%  { opacity: 0; }
-      100% { transform: translate(calc(var(--drift, 30px) * -.5), -110vh); opacity: 0; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .sparks { display: none; }
-    }
-    main { position: relative; z-index: 1; padding-top: 0; padding-bottom: 30vh; }
-    .sparks { z-index: 3; }
-
-    /* The intro holds still for a screen of scrolling while the scene plays,
-       then scrolls away with the rest of the page. */
-    .intro { height: 190vh; height: 190svh; }
-    .intro-pin {
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      height: 100svh;
-      padding-top: 40px;
-    }
-    /* Pull the first heading up so it is already rising out of the smoke as the intro lets go. */
-    .intro + h2 { margin-top: -35vh; }
-    [data-scroll] { will-change: transform, opacity; }
-
-    /* Smoke along the bottom of the screen: text rises out of it. */
-    .smoke {
-      position: fixed;
-      left: 0; right: 0; bottom: 0;
-      height: 38vh;
-      pointer-events: none;
-      z-index: 2;
-      background:
-        radial-gradient(60% 70% at 50% 100%, rgba(255,140,60,.10), transparent 70%),
-        linear-gradient(to top, var(--ground) 0%, rgba(15,26,33,.85) 28%, rgba(15,26,33,0) 100%);
-      -webkit-backdrop-filter: blur(5px);
-      backdrop-filter: blur(5px);
-      -webkit-mask-image: linear-gradient(to top, #000 45%, transparent);
-      mask-image: linear-gradient(to top, #000 45%, transparent);
-    }
-    .smoke::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(40% 50% at 30% 80%, rgba(170,180,190,.07), transparent 70%),
-        radial-gradient(35% 45% at 70% 70%, rgba(170,180,190,.06), transparent 70%);
-      animation: smoke-drift 14s ease-in-out infinite alternate;
-    }
-    @keyframes smoke-drift {
-      from { transform: translateX(-4%); }
-      to   { transform: translateX(4%); }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .smoke::before { animation: none; }
-    }
-
-    /* A whittled stick and a toasting marshmallow, lit by the fire, in the bottom right. */
-    .roast {
-      position: fixed;
-      right: 0;
-      bottom: 0;
-      width: clamp(120px, 20vw, 230px);
-      pointer-events: none;
-      z-index: 0;
-    }
-    .roast svg { display: block; width: 100%; height: auto; overflow: visible; }
-    /* Phones: size by screen height so the marshmallow clears the smoke. */
-    @media (max-width: 700px) {
-      .roast { width: 34vh; width: 34svh; }
-    }
-    .roast { transform-origin: 50% 100%; will-change: transform, filter; }
-    .roast .halo { animation: flicker 3.2s ease-in-out infinite; }
-    @media (prefers-reduced-motion: reduce) {
-      .roast .halo { animation: none; }
-    }
-
-    /* Room to breathe: long gaps between sections so the scroll unfolds slowly. */
-    main h2 { margin-top: clamp(72px, 16vh, 160px); }
-    main .pull { margin: clamp(56px, 12vh, 120px) 0; }
-    main footer { margin-top: clamp(96px, 20vh, 200px); }
-  </style>
-</head>
-<body>
-<div class="drift" aria-hidden="true">
-  <div class="sky far" data-depth="0.12"></div>
-  <div class="sky near" data-depth="0.3"></div>
-</div>
-<div class="sparks" aria-hidden="true">
-  <i style="left:12%;--dur:19s;--drift:40px;animation-delay:0s"></i>
-  <i style="left:83%;--dur:23s;--drift:-30px;animation-delay:5s"></i>
-  <i style="left:38%;--dur:21s;--drift:25px;animation-delay:11s"></i>
-  <i style="left:67%;--dur:17s;--drift:-45px;animation-delay:15s"></i>
-  <i style="left:25%;--dur:25s;--drift:-20px;animation-delay:20s"></i>
-</div>
-<div class="roast" aria-hidden="true">
-  <svg viewBox="0 0 200 320">
-    <defs>
-      <radialGradient id="halo">
-        <stop offset="0" stop-color="#ff9a45" stop-opacity=".45"/>
-        <stop offset=".5" stop-color="#ff7a30" stop-opacity=".12"/>
-        <stop offset="1" stop-color="#ff7a30" stop-opacity="0"/>
-      </radialGradient>
-      <linearGradient id="toast" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#f6eadb"/>
-        <stop offset=".45" stop-color="#ecc58f"/>
-        <stop offset="1" stop-color="#b8692c"/>
-      </linearGradient>
-    </defs>
-
-    <g class="halo-wrap"><circle class="halo" cx="97" cy="113" r="70" fill="url(#halo)"/></g>
-
-    <!-- rim light: the same stick, offset toward the fire -->
-    <g fill="none" stroke="#ff8a3d" stroke-linecap="round" opacity=".55" transform="translate(-1.6 1.4)">
-      <path d="M198 330 Q180 270 166 240 T141 188" stroke-width="10"/>
-      <path d="M168 247 Q176 238 186 231" stroke-width="4"/>
-      <path d="M141 188 Q122 152 104 124 L88 99" stroke-width="5.5"/>
-    </g>
-
-    <!-- bark -->
-    <g fill="none" stroke="#17100c" stroke-linecap="round">
-      <path d="M198 330 Q180 270 166 240 T141 188" stroke-width="9"/>
-      <path d="M168 247 Q176 238 186 231" stroke-width="3.5"/>
-    </g>
-    <!-- carved section, thinner where the bark was shaved off -->
-    <path d="M141 188 Q122 152 104 124 L88 99" fill="none" stroke="#3b2a1e" stroke-width="5" stroke-linecap="round"/>
-    <path d="M140 187 Q121 152 103 124 L87 100" fill="none" stroke="#8a6142" stroke-width="1.1" stroke-dasharray="13 5" opacity=".7"/>
-    <!-- honed point -->
-    <polygon points="89.9,97.9 74,77 86.1,100.1" fill="#3b2a1e"/>
-
-    <!-- marshmallow, skewered and turning golden -->
-    <g transform="translate(97 113) rotate(57.4)">
-      <rect x="-17" y="-15" width="34" height="30" rx="8" fill="url(#toast)"/>
-      <rect x="-17" y="-15" width="34" height="30" rx="8" fill="none" stroke="#ffb35c" stroke-opacity=".5" stroke-width="1"/>
-    </g>
-  </svg>
-</div>
-<div class="smoke" aria-hidden="true"></div>
-<main>
-  <section class="intro">
-  <div class="intro-pin">
-  <div class="fire" aria-hidden="true">
-    <div class="layer" data-depth="0.6">
-      <div class="star" style="left:8%;top:18%"></div>
-      <div class="star" style="left:22%;top:40%"></div>
-      <div class="star" style="left:35%;top:12%"></div>
-      <div class="star" style="left:61%;top:26%"></div>
-      <div class="star" style="left:74%;top:10%"></div>
-      <div class="star" style="left:88%;top:34%"></div>
-    </div>
-    <div class="layer" data-depth="0.4">
-      <svg viewBox="0 0 400 120" preserveAspectRatio="none" style="height:110px">
-        <path fill="#1c2b38" d="M0 120V70l40-30 50 35 60-50 70 45 50-30 60 40 70-35v75z"/>
-      </svg>
-    </div>
-    <div class="layer" data-depth="0.2">
-      <svg viewBox="0 0 400 80" preserveAspectRatio="none" style="height:70px">
-        <path fill="#121d27" d="M0 80V50l14-28 14 28 8-16 12 24 16-34 16 34 10-20 10 20h40l12-26 12 26 8-14 10 18 14-30 14 30h60l10-22 12 22 16-36 16 36 8-16 10 20 14-28 14 28v32z"/>
-      </svg>
-    </div>
-    <div class="layer" data-depth="0">
-      <div class="glow"></div>
-      <div class="ember" style="left:47%;animation-delay:0s;--drift:-14px"></div>
-      <div class="ember" style="left:50%;animation-delay:1.1s;--drift:18px"></div>
-      <div class="ember" style="left:53%;animation-delay:2.3s;--drift:-6px"></div>
-      <div class="ember" style="left:49%;animation-delay:3.4s;--drift:24px"></div>
-      <div class="ember" style="left:52%;animation-delay:4.6s;--drift:-20px"></div>
-    </div>
-  </div>
-
-  <p class="kicker">The idea · a first draft</p>
-  <h1>Smorelore</h1>
-  <p class="lede">A state of mind. Part campfire, part workbench, part story told after dark.</p>
-  </div>
-  </section>
-
-  <h2>Around the fire</h2>
-  <p class="verse">Camping strips things down.<br>
-  A fire, a few friends,<br>
-  a stick, a marshmallow.<br>
-  Nobody's in a hurry.</p>
-  <p class="verse">You watch the coals.<br>
-  You listen.<br>
-  Somebody starts a story<br>
-  that's been told before,<br>
-  and is better every time.</p>
-  <p class="verse">For a little while you are part of the woods,<br>
-  and you notice how much joy<br>
-  fits inside simple things.</p>
-
-  <p class="pull">A s'more is three ingredients<br>and a little patience.<br>Most good things are.</p>
-
-  <h2>Back to the workbench</h2>
-  <p class="verse">Then you come home and open the laptop,<br>
-  and everything is loud again.<br>
-  Frameworks on frameworks.<br>
-  Features nobody asked for.<br>
-  Software that wants your attention<br>
-  more than it wants to help.</p>
-  <p class="verse">So carry the fire back to the craft.</p>
-  <p class="verse">Keep it small:<br>
-  one thing, done well.</p>
-  <p class="verse">Be patient:<br>
-  toast it slow, don't torch it.</p>
-  <p class="verse">Make it to share,<br>
-  passed hand to hand around the circle.</p>
-  <p class="verse">Keep it honest:<br>
-  no tricks,<br>
-  nothing hidden in the woods.</p>
-
-  <h2>The graybeard engineer</h2>
-  <p class="verse">Every campfire has one.<br>
-  The one who has seen a few things.<br>
-  Systems that rose and fell.<br>
-  Ideas that were new three times.<br>
-  Bugs that grew into legends.</p>
-  <p class="verse">That wisdom lives in stories, not in docs,<br>
-  and stories drift off like smoke.<br>
-  Lore is where they settle.<br>
-  This is a place to write them down<br>
-  before the fire burns low.</p>
-
-  <h2>Looking forward from the fire</h2>
-  <p class="verse">The future is coming fast,<br>
-  and much of it is wonderful.</p>
-  <p class="verse">The question here was never<br>
-  whether to pick up the new tools,<br>
-  but how to hold them and stay human.</p>
-  <p class="verse">Build with care.<br>
-  Keep it simple.<br>
-  Leave the campsite better<br>
-  than you found it.</p>
-
-  <h2>Pull up a log</h2>
-  <p class="verse">For now, just this page<br>
-  and a fire.<br>
-  More to come.</p>
-
-  <footer>Smorelore · first sketched October 2026</footer>
-</main>
-<script>
-  // Scroll choreography. Skipped entirely for reduced motion.
-  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    // Header: farther layers drift down slower than the page scrolls.
-    const layers = document.querySelectorAll('.fire .layer');
-
-    // Background: faint embers scattered down the page, two depths.
-    const skies = document.querySelectorAll('.drift .sky');
-    const layerHeight = el => innerHeight +
-      (document.documentElement.scrollHeight - innerHeight) * el.dataset.depth;
-
-    const fillSkies = () => {
-      skies.forEach(sky => {
-        const near = sky.classList.contains('near');
-        const h = layerHeight(sky);
-        sky.style.height = h + 'px';
-        sky.innerHTML = '';
-        const count = Math.round(h / (near ? 160 : 70));
-        for (let i = 0; i < count; i++) {
-          const dot = document.createElement('i');
-          const size = near ? 3 + Math.random() * 2 : 1.5 + Math.random();
-          dot.style.cssText = `left:${Math.random() * 100}%;top:${Math.random() * h}px;` +
-            `width:${size}px;height:${size}px;opacity:${(near ? .25 : .15) + Math.random() * .25}`;
-          sky.appendChild(dot);
-        }
-      });
-    };
-
-    // The intro is pinned for one screen of scrolling. Progress 0 → 1 runs the
-    // header parallax and walks the stick to the corner; then the text arrives.
-    const intro = document.querySelector('.intro');
-    const pin = intro.querySelector('.intro-pin');
-    // Pull the first heading up as far as it can go without sliding under the
-    // title, so the text is already rising while the stick is still travelling.
-    const firstHeading = intro.nextElementSibling;
-    const lede = pin.querySelector('.lede');
-    const fitHandoff = () => {
-      const ledeBottom = lede.offsetTop + lede.offsetHeight;
-      const room = innerHeight - ledeBottom - 60;
-      firstHeading.style.marginTop = -Math.max(Math.min(innerHeight * 0.5, room), 0) + 'px';
-    };
-    fitHandoff();
-    const introProgress = y => {
-      const span = intro.offsetHeight - pin.offsetHeight;
-      return Math.min(Math.max((y - intro.offsetTop) / span, 0), 1);
-    };
-
-    // Text: each heading and stanza rises out of the smoke at the bottom of the
-    // screen, fading in as it climbs, each at its own slightly different pace.
-    const texts = [...document.querySelectorAll('main > h2, main > .verse, main > .pull, main > footer')];
-    texts.forEach((el, i) => {
-      el.dataset.scroll = '';
-      el.dataset.speed = [0.04, 0.07, 0.055, 0.09][i % 4];
-    });
-    const placeText = () => {
-      const H = innerHeight;
-      texts.forEach(el => {
-        const r = el.getBoundingClientRect();
-        const top = r.top - (+el.dataset.offset || 0); // where it would be without our nudge
-        // 0 while still down in the smoke, 1 once it has climbed to 55% of the screen.
-        const raw = Math.min(Math.max((H * 0.92 - top) / (H * 0.37), 0), 1);
-        const f = raw * raw * (3 - 2 * raw);
-        const offset = (1 - f) * 60 + (top + r.height / 2 - H / 2) * el.dataset.speed;
-        el.dataset.offset = offset;
-        el.style.transform = `translateY(${offset.toFixed(1)}px)`;
-        el.style.opacity = f.toFixed(3);
-      });
-    };
-
-    // The stick: big, centered and lit at the top; it slides into the corner,
-    // shrinking and fading into the dark, finishing exactly as the intro lets go.
-    const roast = document.querySelector('.roast');
-    const haloWrap = roast.querySelector('.halo-wrap');
-    const lerp = (a, b, t) => a + (b - a) * t;
-    const placeRoast = p => {
-      const t = p * p * (3 - 2 * p); // smoothstep
-      const w = roast.offsetWidth;
-      const W = innerWidth;
-      // Start with the stick's center about 62% across the screen, end slightly off the right edge.
-      const startX = w / 2 - 0.38 * W;
-      const endX = w * 0.18;
-      const x = lerp(startX, endX, t);
-      const phone = W <= 700;
-      const scale = lerp(phone ? 1.25 : 1.55, phone ? 0.95 : 0.8, t);
-      // Keep the marshmallow above the smoke: if it would sit too low, lift the
-      // stick a little (never so far that its base shows above the dense smoke).
-      const H = innerHeight;
-      const mallowY = H - roast.offsetHeight * scale * 0.647; // marshmallow is 64.7% up the drawing
-      const lift = Math.min(Math.max(mallowY - H * lerp(0.55, 0.64, t), 0), H * 0.1);
-      roast.style.transform = `translate(${x.toFixed(1)}px, ${(-lift).toFixed(1)}px) scale(${scale.toFixed(3)})`;
-      roast.style.filter = `brightness(${lerp(1, 0.35, t).toFixed(3)})`;
-      haloWrap.style.opacity = lerp(1, 0.1, t).toFixed(3);
-    };
-
-    let ticking = false;
-    const update = () => {
-      const y = scrollY;
-      const p = introProgress(y);
-      // Header parts drift apart while the intro is pinned: stars most, treeline least.
-      layers.forEach(l => l.style.transform = `translateY(${(p * 90 * l.dataset.depth).toFixed(1)}px)`);
-      skies.forEach(s => s.style.transform = `translateY(${-y * s.dataset.depth}px)`);
-      placeRoast(p);
-      placeText();
-      ticking = false;
-    };
-    addEventListener('scroll', () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(update);
-    }, { passive: true });
-    // Only re-scatter when the width changes, so mobile URL-bar resizes don't reshuffle.
-    let lastWidth = innerWidth;
-    addEventListener('resize', () => {
-      if (innerWidth !== lastWidth) {
-        lastWidth = innerWidth;
-        fillSkies();
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Smorelore</title>
+    <meta
+      name="description"
+      content="What Smorelore is: a state of mind. Campfires, simple things, and carrying that back to how software gets made."
+    />
+    <meta name="color-scheme" content="dark" />
+    <link rel="stylesheet" href="/style.css" />
+    <style>
+      /* This page is always dark, whatever the system setting. */
+      :root {
+        color-scheme: dark;
+        --ground: #0f1a21;
+        --card: #17242d;
+        --ink: #e8f1f7;
+        --muted: #a3b4bf;
+        --rule: #2a3b47;
+        --accent: #7db7f0;
       }
-      fitHandoff();
-      update();
-    });
-    fillSkies();
-    update();
-  }
-</script>
-</body>
+
+      .verse {
+        margin-bottom: 22px;
+      }
+
+      .fire {
+        position: relative;
+        height: 220px;
+        margin: 0 -16px 32px;
+        overflow: hidden;
+        background: linear-gradient(#0b1622, #1a2633 70%, #2b2420);
+        border-radius: 0 0 24px 24px;
+      }
+      .fire .glow {
+        position: absolute;
+        left: 50%;
+        bottom: -60px;
+        width: 260px;
+        height: 160px;
+        transform: translateX(-50%);
+        background: radial-gradient(
+          closest-side,
+          rgba(255, 160, 60, 0.55),
+          rgba(255, 110, 40, 0.15) 60%,
+          transparent
+        );
+        animation: flicker 3.2s ease-in-out infinite;
+      }
+      .fire .ember {
+        position: absolute;
+        bottom: 10px;
+        width: 3px;
+        height: 3px;
+        border-radius: 50%;
+        background: #ffb35c;
+        box-shadow: 0 0 6px #ff8a3d;
+        opacity: 0;
+        animation: rise 6s linear infinite;
+      }
+      .fire .star {
+        position: absolute;
+        width: 2px;
+        height: 2px;
+        border-radius: 50%;
+        background: #dfe9f3;
+        opacity: 0.7;
+      }
+      @keyframes rise {
+        0% {
+          transform: translate(0, 0);
+          opacity: 0;
+        }
+        10% {
+          opacity: 1;
+        }
+        100% {
+          transform: translate(var(--drift, 12px), -170px);
+          opacity: 0;
+        }
+      }
+      @keyframes flicker {
+        0%,
+        100% {
+          opacity: 0.85;
+        }
+        40% {
+          opacity: 1;
+        }
+        70% {
+          opacity: 0.75;
+        }
+      }
+      .fire .layer {
+        position: absolute;
+        inset: 0;
+        will-change: transform;
+      }
+      .fire svg {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .fire .glow,
+        .fire .ember {
+          animation: none;
+        }
+      }
+
+      .kicker {
+        font-size: 13px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+      .pull {
+        font-size: 21px;
+        line-height: 1.45;
+        margin: 28px 0;
+        padding-left: 16px;
+        border-left: 3px solid var(--accent);
+      }
+      .drift {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+        z-index: 0;
+      }
+      .drift .sky {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        will-change: transform;
+      }
+      .drift i {
+        position: absolute;
+        border-radius: 50%;
+        background: #ffb35c;
+      }
+      .drift .near i {
+        box-shadow: 0 0 8px #ff8a3d;
+      }
+      .sparks {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+        z-index: 2;
+      }
+      .sparks i {
+        position: absolute;
+        bottom: -10px;
+        width: 3px;
+        height: 3px;
+        border-radius: 50%;
+        background: #ffb35c;
+        box-shadow: 0 0 8px #ff8a3d;
+        opacity: 0;
+        animation: float-up var(--dur, 18s) linear infinite;
+      }
+      @keyframes float-up {
+        0% {
+          transform: translate(0, 0);
+          opacity: 0;
+        }
+        8% {
+          opacity: 0.8;
+        }
+        50% {
+          transform: translate(var(--drift, 30px), -55vh);
+        }
+        75% {
+          opacity: 0;
+        }
+        100% {
+          transform: translate(calc(var(--drift, 30px) * -0.5), -110vh);
+          opacity: 0;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .sparks {
+          display: none;
+        }
+      }
+      main {
+        position: relative;
+        z-index: 1;
+        padding-top: 0;
+        padding-bottom: 30vh;
+      }
+      .sparks {
+        z-index: 3;
+      }
+
+      /* The intro holds still for a screen of scrolling while the scene plays,
+       then scrolls away with the rest of the page. */
+      .intro {
+        height: 190vh;
+        height: 190svh;
+      }
+      .intro-pin {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        height: 100svh;
+        padding-top: 40px;
+      }
+      /* Pull the first heading up so it is already rising out of the smoke as the intro lets go. */
+      .intro + h2 {
+        margin-top: -35vh;
+      }
+      [data-scroll] {
+        will-change: transform, opacity;
+      }
+
+      /* Smoke along the bottom of the screen: text rises out of it. */
+      .smoke {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 38vh;
+        height: 38svh;
+        pointer-events: none;
+        z-index: 2;
+        background:
+          radial-gradient(
+            60% 70% at 50% 100%,
+            rgba(255, 140, 60, 0.1),
+            transparent 70%
+          ),
+          linear-gradient(
+            to top,
+            var(--ground) 0%,
+            rgba(15, 26, 33, 0.85) 28%,
+            rgba(15, 26, 33, 0) 100%
+          );
+        -webkit-backdrop-filter: blur(5px);
+        backdrop-filter: blur(5px);
+        -webkit-mask-image: linear-gradient(to top, #000 45%, transparent);
+        mask-image: linear-gradient(to top, #000 45%, transparent);
+      }
+      .smoke::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(
+            40% 50% at 30% 80%,
+            rgba(170, 180, 190, 0.07),
+            transparent 70%
+          ),
+          radial-gradient(
+            35% 45% at 70% 70%,
+            rgba(170, 180, 190, 0.06),
+            transparent 70%
+          );
+        animation: smoke-drift 14s ease-in-out infinite alternate;
+      }
+      @keyframes smoke-drift {
+        from {
+          transform: translateX(-4%);
+        }
+        to {
+          transform: translateX(4%);
+        }
+      }
+      @media (max-width: 700px) {
+        .smoke {
+          height: 30vh;
+          height: 30svh;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .smoke::before {
+          animation: none;
+        }
+      }
+
+      /* Whittled sticks with toasting marshmallows, lit by the fire. Without the
+         script there is just one, standing in the bottom-right corner. */
+      .roast {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        width: clamp(120px, 20vw, 230px);
+        pointer-events: none;
+        z-index: 0;
+      }
+      .roast svg {
+        display: block;
+        width: 100%;
+        height: auto;
+        overflow: visible;
+      }
+      /* With the script, each stick is placed from the left edge and sized to fit
+         the space between the title and the smoke. */
+      .roast.placed {
+        right: auto;
+        left: 0;
+      }
+      /* The left-hand stick leans in from the other side. */
+      .roast.mirror svg {
+        transform: scaleX(-1);
+      }
+      .roast {
+        transform-origin: 50% 100%;
+        will-change: transform, filter;
+      }
+      .roast .halo {
+        animation: flicker 3.2s ease-in-out infinite;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .roast .halo {
+          animation: none;
+        }
+      }
+
+      /* Room to breathe: long gaps between sections so the scroll unfolds slowly. */
+      main h2 {
+        margin-top: clamp(72px, 16vh, 160px);
+      }
+      main .pull {
+        margin: clamp(56px, 12vh, 120px) 0;
+      }
+      main footer {
+        margin-top: clamp(96px, 20vh, 200px);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="drift" aria-hidden="true">
+      <div class="sky far" data-depth="0.12"></div>
+      <div class="sky near" data-depth="0.3"></div>
+    </div>
+    <div class="sparks" aria-hidden="true">
+      <i style="left: 12%; --dur: 19s; --drift: 40px; animation-delay: 0s"></i>
+      <i style="left: 83%; --dur: 23s; --drift: -30px; animation-delay: 5s"></i>
+      <i style="left: 38%; --dur: 21s; --drift: 25px; animation-delay: 11s"></i>
+      <i
+        style="left: 67%; --dur: 17s; --drift: -45px; animation-delay: 15s"
+      ></i>
+      <i
+        style="left: 25%; --dur: 25s; --drift: -20px; animation-delay: 20s"
+      ></i>
+    </div>
+    <div class="roast" aria-hidden="true">
+      <svg viewBox="0 0 200 320">
+        <defs>
+          <radialGradient id="halo">
+            <stop offset="0" stop-color="#ff9a45" stop-opacity=".45" />
+            <stop offset=".5" stop-color="#ff7a30" stop-opacity=".12" />
+            <stop offset="1" stop-color="#ff7a30" stop-opacity="0" />
+          </radialGradient>
+          <linearGradient id="toast" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#f6eadb" />
+            <stop offset=".45" stop-color="#ecc58f" />
+            <stop offset="1" stop-color="#b8692c" />
+          </linearGradient>
+          <!-- for the one somebody always torches -->
+          <linearGradient id="char" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#d9b48a" />
+            <stop offset=".4" stop-color="#7a4421" />
+            <stop offset="1" stop-color="#1e120b" />
+          </linearGradient>
+        </defs>
+
+        <g class="halo-wrap">
+          <circle class="halo" cx="97" cy="113" r="70" fill="url(#halo)" />
+        </g>
+
+        <!-- rim light: the same stick, offset toward the fire -->
+        <g
+          fill="none"
+          stroke="#ff8a3d"
+          stroke-linecap="round"
+          opacity=".55"
+          transform="translate(-1.6 1.4)"
+        >
+          <path d="M198 330 Q180 270 166 240 T141 188" stroke-width="10" />
+          <path d="M168 247 Q176 238 186 231" stroke-width="4" />
+          <path d="M141 188 Q122 152 104 124 L88 99" stroke-width="5.5" />
+        </g>
+
+        <!-- bark -->
+        <g fill="none" stroke="#17100c" stroke-linecap="round">
+          <path d="M198 330 Q180 270 166 240 T141 188" stroke-width="9" />
+          <path d="M168 247 Q176 238 186 231" stroke-width="3.5" />
+        </g>
+        <!-- carved section, thinner where the bark was shaved off -->
+        <path
+          d="M141 188 Q122 152 104 124 L88 99"
+          fill="none"
+          stroke="#3b2a1e"
+          stroke-width="5"
+          stroke-linecap="round"
+        />
+        <path
+          d="M140 187 Q121 152 103 124 L87 100"
+          fill="none"
+          stroke="#8a6142"
+          stroke-width="1.1"
+          stroke-dasharray="13 5"
+          opacity=".7"
+        />
+        <!-- honed point -->
+        <polygon points="89.9,97.9 74,77 86.1,100.1" fill="#3b2a1e" />
+
+        <!-- marshmallow, skewered and turning golden -->
+        <g transform="translate(97 113) rotate(57.4)">
+          <rect
+            x="-17"
+            y="-15"
+            width="34"
+            height="30"
+            rx="8"
+            fill="url(#toast)"
+          />
+          <rect
+            x="-17"
+            y="-15"
+            width="34"
+            height="30"
+            rx="8"
+            fill="none"
+            stroke="#ffb35c"
+            stroke-opacity=".5"
+            stroke-width="1"
+          />
+        </g>
+      </svg>
+    </div>
+    <div class="smoke" aria-hidden="true"></div>
+    <main>
+      <section class="intro">
+        <div class="intro-pin">
+          <div class="fire" aria-hidden="true">
+            <div class="layer" data-depth="0.6">
+              <div class="star" style="left: 8%; top: 18%"></div>
+              <div class="star" style="left: 22%; top: 40%"></div>
+              <div class="star" style="left: 35%; top: 12%"></div>
+              <div class="star" style="left: 61%; top: 26%"></div>
+              <div class="star" style="left: 74%; top: 10%"></div>
+              <div class="star" style="left: 88%; top: 34%"></div>
+            </div>
+            <div class="layer" data-depth="0.4">
+              <svg
+                viewBox="0 0 400 120"
+                preserveAspectRatio="none"
+                style="height: 110px"
+              >
+                <path
+                  fill="#1c2b38"
+                  d="M0 120V70l40-30 50 35 60-50 70 45 50-30 60 40 70-35v75z"
+                />
+              </svg>
+            </div>
+            <div class="layer" data-depth="0.2">
+              <svg
+                viewBox="0 0 400 80"
+                preserveAspectRatio="none"
+                style="height: 70px"
+              >
+                <path
+                  fill="#121d27"
+                  d="M0 80V50l14-28 14 28 8-16 12 24 16-34 16 34 10-20 10 20h40l12-26 12 26 8-14 10 18 14-30 14 30h60l10-22 12 22 16-36 16 36 8-16 10 20 14-28 14 28v32z"
+                />
+              </svg>
+            </div>
+            <div class="layer" data-depth="0">
+              <div class="glow"></div>
+              <div
+                class="ember"
+                style="left: 47%; animation-delay: 0s; --drift: -14px"
+              ></div>
+              <div
+                class="ember"
+                style="left: 50%; animation-delay: 1.1s; --drift: 18px"
+              ></div>
+              <div
+                class="ember"
+                style="left: 53%; animation-delay: 2.3s; --drift: -6px"
+              ></div>
+              <div
+                class="ember"
+                style="left: 49%; animation-delay: 3.4s; --drift: 24px"
+              ></div>
+              <div
+                class="ember"
+                style="left: 52%; animation-delay: 4.6s; --drift: -20px"
+              ></div>
+            </div>
+          </div>
+
+          <!-- <p class="kicker">The idea · a first draft</p> -->
+          <h1>Smorelore</h1>
+          <p class="lede">
+            A state of mind. Part campfire, part workbench, part story told
+            after dark.
+          </p>
+        </div>
+      </section>
+
+      <h2>Around the fire</h2>
+      <p class="verse">
+        Camping strips things down.<br />
+        A fire, a few friends,<br />
+        a stick, a marshmallow.<br />
+        Nobody's in a hurry.
+      </p>
+      <p class="verse">
+        You watch the coals.<br />
+        You listen.<br />
+        Somebody starts a story<br />
+        that's been told before,<br />
+        and is better every time.
+      </p>
+      <p class="verse">
+        For a little while you are part of the woods,<br />
+        and you notice how much joy<br />
+        fits inside simple things.
+      </p>
+
+      <p class="pull">
+        A s'more is three ingredients<br />and a little patience.<br />Most good
+        things are.
+      </p>
+
+      <h2>Back to the workbench</h2>
+      <p class="verse">
+        Then you come home and open the laptop,<br />
+        and everything is loud again.<br />
+        Frameworks on frameworks.<br />
+        Features nobody asked for.<br />
+        Software that wants your attention<br />
+        more than it wants to help.
+      </p>
+      <p class="verse">So carry the fire back to the craft.</p>
+      <p class="verse">
+        Keep it small:<br />
+        one thing, done well.
+      </p>
+      <p class="verse">
+        Be patient:<br />
+        toast it slow, don't torch it.
+      </p>
+      <p class="verse">
+        Make it to share,<br />
+        passed hand to hand around the circle.
+      </p>
+      <p class="verse">
+        Keep it honest:<br />
+        no tricks,<br />
+        nothing hidden in the woods.
+      </p>
+
+      <h2>The graybeard engineer</h2>
+      <p class="verse">
+        Every campfire has one.<br />
+        The one who has seen a few things.<br />
+        Systems that rose and fell.<br />
+        Ideas that were new three times.<br />
+        Bugs that grew into legends.
+      </p>
+      <p class="verse">
+        That wisdom lives in stories, not in docs,<br />
+        and stories drift off like smoke.<br />
+        Lore is where they settle.<br />
+        This is a place to write them down<br />
+        before the fire burns low.
+      </p>
+
+      <h2>Looking forward from the fire</h2>
+      <p class="verse">
+        The future is coming fast,<br />
+        and much of it is wonderful.
+      </p>
+      <p class="verse">
+        The question here was never<br />
+        whether to pick up the new tools,<br />
+        but how to hold them and stay human.
+      </p>
+      <p class="verse">
+        Build with care.<br />
+        Keep it simple.<br />
+        Leave the campsite better<br />
+        than you found it.
+      </p>
+
+      <h2>Pull up a log</h2>
+      <p class="verse">
+        For now, just this page<br />
+        and a fire.<br />
+        More to come.
+      </p>
+
+      <footer>Smorelore · first sketched October 2026</footer>
+    </main>
+    <script>
+      // Scroll choreography. Skipped entirely for reduced motion.
+      if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        // Header: farther layers drift down slower than the page scrolls.
+        const layers = document.querySelectorAll(".fire .layer");
+
+        // Background: faint embers scattered down the page, two depths.
+        const skies = document.querySelectorAll(".drift .sky");
+        const layerHeight = (el) =>
+          innerHeight +
+          (document.documentElement.scrollHeight - innerHeight) *
+            el.dataset.depth;
+
+        const fillSkies = () => {
+          skies.forEach((sky) => {
+            const near = sky.classList.contains("near");
+            const h = layerHeight(sky);
+            sky.style.height = h + "px";
+            sky.innerHTML = "";
+            const count = Math.round(h / (near ? 160 : 70));
+            for (let i = 0; i < count; i++) {
+              const dot = document.createElement("i");
+              const size = near ? 3 + Math.random() * 2 : 1.5 + Math.random();
+              dot.style.cssText =
+                `left:${Math.random() * 100}%;top:${Math.random() * h}px;` +
+                `width:${size}px;height:${size}px;opacity:${(near ? 0.25 : 0.15) + Math.random() * 0.25}`;
+              sky.appendChild(dot);
+            }
+          });
+        };
+
+        // The intro is pinned for one screen of scrolling. Progress 0 → 1 runs the
+        // header parallax and walks the stick to the corner; then the text arrives.
+        const intro = document.querySelector(".intro");
+        const pin = intro.querySelector(".intro-pin");
+        // Pull the first heading up as far as it can go without sliding under the
+        // title, so the text is already rising while the stick is still travelling.
+        const firstHeading = intro.nextElementSibling;
+        const lede = pin.querySelector(".lede");
+        const fitHandoff = () => {
+          const ledeBottom = lede.offsetTop + lede.offsetHeight;
+          const room = innerHeight - ledeBottom - 60;
+          firstHeading.style.marginTop =
+            -Math.max(Math.min(innerHeight * 0.5, room), 0) + "px";
+        };
+        fitHandoff();
+        const introProgress = (y) => {
+          const span = intro.offsetHeight - pin.offsetHeight;
+          return Math.min(Math.max((y - intro.offsetTop) / span, 0), 1);
+        };
+
+        // Text: each heading and stanza rises out of the smoke at the bottom of the
+        // screen, fading in as it climbs, each at its own slightly different pace.
+        const texts = [
+          ...document.querySelectorAll(
+            "main > h2, main > .verse, main > .pull, main > footer",
+          ),
+        ];
+        texts.forEach((el, i) => {
+          el.dataset.scroll = "";
+          el.dataset.speed = [0.04, 0.07, 0.055, 0.09][i % 4];
+        });
+        const placeText = () => {
+          const H = innerHeight;
+          texts.forEach((el) => {
+            const r = el.getBoundingClientRect();
+            const top = r.top - (+el.dataset.offset || 0); // where it would be without our nudge
+            // 0 while still down in the smoke, 1 once it has climbed to 55% of the screen.
+            const raw = Math.min(Math.max((H * 0.92 - top) / (H * 0.37), 0), 1);
+            const f = raw * raw * (3 - 2 * raw);
+            const offset =
+              (1 - f) * 60 + (top + r.height / 2 - H / 2) * el.dataset.speed;
+            el.dataset.offset = offset;
+            el.style.transform = `translateY(${offset.toFixed(1)}px)`;
+            el.style.opacity = f.toFixed(3);
+          });
+        };
+
+        // The sticks: three friends around the fire. At the top they lean in, big
+        // and lit. Scrolling down, the outer two slide off to the corners, shrinking
+        // and going dark, and the one at the back sinks into the smoke. They finish
+        // exactly as the intro lets go.
+        const lerp = (a, b, t) => a + (b - a) * t;
+        const right = document.querySelector(".roast");
+        const makeStick = (cls) => {
+          const el = right.cloneNode(true);
+          el.querySelector("defs")?.remove(); // gradients are shared with the original
+          el.classList.add(cls);
+          right.before(el); // earlier in the page means further back
+          return el;
+        };
+        const back = makeStick("back");
+        const left = makeStick("mirror");
+        back
+          .querySelectorAll('rect[fill="url(#toast)"]')
+          .forEach((r) => r.setAttribute("fill", "url(#char)"));
+        back.querySelector(".halo").style.animationDelay = "-1.3s";
+        left.querySelector(".halo").style.animationDelay = "-2.1s";
+
+        // x: where its center starts, as a share of the screen width.
+        // size: relative to the front stick. light: brightness at start and end.
+        const sticks = [
+          { el: back, x: 0.52, size: 0.72, light: [0.75, 0.25], end: "sink" },
+          { el: left, x: 0.28, size: 0.88, light: [0.9, 0.3], end: "left" },
+          { el: right, x: 0.72, size: 1, light: [1, 0.35], end: "right" },
+        ];
+        sticks.forEach((s) => {
+          s.el.classList.add("placed");
+          s.halo = s.el.querySelector(".halo-wrap");
+        });
+
+        // Size the sticks so the front marshmallow sits about a third of the way
+        // down the open space under the title. Only redone when the width changes,
+        // so a phone's toolbar sliding away doesn't make them jump.
+        const MALLOW = 0.647; // the marshmallow sits 64.7% of the way up the drawing
+        const sizeSticks = () => {
+          const H = innerHeight;
+          const span = intro.offsetHeight - pin.offsetHeight;
+          const ledeBottom =
+            lede.getBoundingClientRect().bottom +
+            Math.max(scrollY - intro.offsetTop - span, 0);
+          const target = ledeBottom + 0.35 * (H - ledeBottom);
+          const frontH = (H - target) / MALLOW;
+          const frontW = Math.min(Math.max(frontH / 1.6, 90), 340); // drawing is 200×320
+          sticks.forEach((s) => {
+            s.w = frontW * s.size;
+            s.el.style.width = s.w + "px";
+          });
+        };
+
+        const placeSticks = (p) => {
+          const t = p * p * (3 - 2 * p); // smoothstep
+          const W = innerWidth;
+          const H = innerHeight;
+          sticks.forEach((s) => {
+            const w = s.w;
+            const startX = s.x * W - w / 2;
+            const endX =
+              s.end === "right"
+                ? W - w + w * 0.18
+                : s.end === "left"
+                  ? -w * 0.18
+                  : startX + W * 0.08;
+            const x = lerp(startX, endX, t);
+            const y = s.end === "sink" ? lerp(0, H * 0.35, t) : 0;
+            const scale = lerp(1, 0.8, t);
+            s.el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) scale(${scale.toFixed(3)})`;
+            s.el.style.filter = `brightness(${lerp(s.light[0], s.light[1], t).toFixed(3)})`;
+            s.halo.style.opacity = lerp(1, 0.1, t).toFixed(3);
+            if (s.end === "sink") s.el.style.opacity = lerp(1, 0, t).toFixed(3);
+          });
+        };
+
+        let ticking = false;
+        const update = () => {
+          const y = scrollY;
+          const p = introProgress(y);
+          // Header parts drift apart while the intro is pinned: stars most, treeline least.
+          layers.forEach(
+            (l) =>
+              (l.style.transform = `translateY(${(p * 90 * l.dataset.depth).toFixed(1)}px)`),
+          );
+          skies.forEach(
+            (s) =>
+              (s.style.transform = `translateY(${-y * s.dataset.depth}px)`),
+          );
+          placeSticks(p);
+          placeText();
+          ticking = false;
+        };
+        addEventListener(
+          "scroll",
+          () => {
+            if (ticking) return;
+            ticking = true;
+            requestAnimationFrame(update);
+          },
+          { passive: true },
+        );
+        // Only re-scatter when the width changes, so mobile URL-bar resizes don't reshuffle.
+        let lastWidth = innerWidth;
+        addEventListener("resize", () => {
+          if (innerWidth !== lastWidth) {
+            lastWidth = innerWidth;
+            fillSkies();
+            sizeSticks();
+          }
+          fitHandoff();
+          update();
+        });
+        fillSkies();
+        sizeSticks();
+        update();
+      }
+    </script>
+  </body>
 </html>
