@@ -22,8 +22,45 @@
         --accent: #7db7f0;
       }
 
+      /* Fraunces, served from this site rather than a font CDN. Variable in
+         weight, optical size and softness; SOFT rounds the terminals off. */
+      @font-face {
+        font-family: "Fraunces";
+        src: url("/fonts/fraunces-latin-full-normal.woff2") format("woff2");
+        font-weight: 100 900;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: "Fraunces";
+        src: url("/fonts/fraunces-latin-full-italic.woff2") format("woff2");
+        font-weight: 100 900;
+        font-style: italic;
+        font-display: swap;
+      }
+      body {
+        font-family: "Fraunces", Georgia, serif;
+        font-variation-settings: "SOFT" 100;
+        font-optical-sizing: auto;
+      }
+      h1 {
+        font-size: clamp(52px, 13vw, 84px);
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        line-height: 1;
+        margin-bottom: 12px;
+        font-variation-settings: "SOFT" 100, "WONK" 1;
+      }
+      .lede {
+        font-size: clamp(18px, 4.4vw, 24px);
+        font-style: italic;
+        font-weight: 300;
+      }
       .verse {
-        margin-bottom: 22px;
+        font-size: clamp(20px, 5vw, 28px);
+        line-height: 1.5;
+        font-weight: 350;
+        margin-bottom: 30px;
       }
 
       .fire {
@@ -59,14 +96,6 @@
         box-shadow: 0 0 6px #ff8a3d;
         opacity: 0;
         animation: rise 6s linear infinite;
-      }
-      .fire .star {
-        position: absolute;
-        width: 2px;
-        height: 2px;
-        border-radius: 50%;
-        background: #dfe9f3;
-        opacity: 0.7;
       }
       @keyframes rise {
         0% {
@@ -212,8 +241,8 @@
         height: 100svh;
         padding-top: 40px;
       }
-      /* Pull the first heading up so it is already rising out of the smoke as the intro lets go. */
-      .intro + h2 {
+      /* Pull the first section up so it is already rising out of the smoke as the intro lets go. */
+      .intro + .mark {
         margin-top: -35vh;
       }
       [data-scroll] {
@@ -324,8 +353,66 @@
       }
 
       /* Room to breathe: long gaps between sections so the scroll unfolds slowly. */
-      main h2 {
+      main .mark {
         margin-top: clamp(72px, 16vh, 160px);
+      }
+
+      /* A section opens with an ember floating above its first line, and that
+         line is lit: the warm colour is what says a new part has begun. */
+      .mark {
+        height: 28px;
+        margin-bottom: 6px;
+        position: relative;
+      }
+      .mark i {
+        position: absolute;
+        left: 4px;
+        bottom: 4px;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #ffb35c;
+        box-shadow:
+          0 0 6px 1px #ff8a3d,
+          0 0 16px 4px rgba(255, 120, 40, 0.35);
+        animation:
+          hover 5.5s ease-in-out infinite,
+          glow 2.8s ease-in-out infinite;
+        animation-delay: var(--delay, 0s), var(--delay, 0s);
+      }
+      @keyframes hover {
+        0%,
+        100% {
+          transform: translate(0, 0);
+        }
+        30% {
+          transform: translate(3px, -9px);
+        }
+        65% {
+          transform: translate(-2px, -15px);
+        }
+      }
+      @keyframes glow {
+        0%,
+        100% {
+          opacity: 0.75;
+        }
+        45% {
+          opacity: 1;
+        }
+        70% {
+          opacity: 0.6;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .mark i {
+          animation: none;
+        }
+      }
+      .lead {
+        color: #ffc98a;
+        font-style: italic;
+        font-weight: 500;
       }
       main .pull {
         margin: clamp(56px, 12vh, 120px) 0;
@@ -442,14 +529,6 @@
       <section class="intro">
         <div class="intro-pin">
           <div class="fire" aria-hidden="true">
-            <div class="layer" data-depth="0.6">
-              <div class="star" style="left: 8%; top: 18%"></div>
-              <div class="star" style="left: 22%; top: 40%"></div>
-              <div class="star" style="left: 35%; top: 12%"></div>
-              <div class="star" style="left: 61%; top: 26%"></div>
-              <div class="star" style="left: 74%; top: 10%"></div>
-              <div class="star" style="left: 88%; top: 34%"></div>
-            </div>
             <div class="layer" data-depth="0.4">
               <svg
                 viewBox="0 0 400 120"
@@ -505,9 +584,9 @@
         </div>
       </section>
 
-      <h2>a campfire</h2>
+      <div class="mark" aria-hidden="true"><i></i></div>
       <p class="verse">
-        a campfire, some friends,<br />
+        <span class="lead">a campfire,</span> some friends,<br />
         a stick, a marshmallow<br />
       </p>
       <p class="verse">
@@ -521,9 +600,9 @@
         fits inside simple things
       </p>
 
-      <h2>the workbench</h2>
+      <div class="mark" aria-hidden="true"><i style="--delay: -1.8s"></i></div>
       <p class="verse">
-        back to the craft,<br />
+        <span class="lead">back to the workbench,</span><br />
         the mind refreshed and focused<br />
         and filled with fire
       </p>
@@ -534,9 +613,9 @@
         keep it honest, no tricks in the woods
       </p>
 
-      <h2>the lore</h2>
+      <div class="mark" aria-hidden="true"><i style="--delay: -3.1s"></i></div>
       <p class="verse">
-        that wisdom lives in stories,<br />
+        <span class="lead">wisdom lives in stories,</span><br />
         and stories drift off like smoke<br />
         lore is where they settle<br />
         this is a place to write them down<br />
@@ -545,11 +624,12 @@
       <p class="verse">
         build with care<br />
         keep it simple<br />
-        leave the place better<br />
+        leave this place better<br />
         than you found it
       </p>
 
-      <h2>pull up a log</h2>
+      <div class="mark" aria-hidden="true"><i style="--delay: -4.4s"></i></div>
+      <p class="verse"><span class="lead">pull up a log</span></p>
 
       <footer>smorelore · first sketched october 2026</footer>
     </main>
@@ -585,17 +665,17 @@
         };
 
         // The intro is pinned for one screen of scrolling. Progress 0 → 1 runs the
-        // header parallax and walks the stick to the corner; then the text arrives.
+        // header parallax and walks the sticks to the corners; then the text arrives.
         const intro = document.querySelector(".intro");
         const pin = intro.querySelector(".intro-pin");
-        // Pull the first heading up as far as it can go without sliding under the
+        // Pull the first section up as far as it can go without sliding under the
         // title, so the text is already rising while the stick is still travelling.
-        const firstHeading = intro.nextElementSibling;
+        const firstSection = intro.nextElementSibling;
         const lede = pin.querySelector(".lede");
         const fitHandoff = () => {
           const ledeBottom = lede.offsetTop + lede.offsetHeight;
           const room = innerHeight - ledeBottom - 60;
-          firstHeading.style.marginTop =
+          firstSection.style.marginTop =
             -Math.max(Math.min(innerHeight * 0.5, room), 0) + "px";
         };
         fitHandoff();
@@ -604,11 +684,11 @@
           return Math.min(Math.max((y - intro.offsetTop) / span, 0), 1);
         };
 
-        // Text: each heading and stanza rises out of the smoke at the bottom of the
+        // Text: each ember and stanza rises out of the smoke at the bottom of the
         // screen, fading in as it climbs, each at its own slightly different pace.
         const texts = [
           ...document.querySelectorAll(
-            "main > h2, main > .verse, main > .pull, main > footer",
+            "main > .mark, main > .verse, main > .pull, main > footer",
           ),
         ];
         texts.forEach((el, i) => {
@@ -710,7 +790,7 @@
         const update = () => {
           const y = scrollY;
           const p = introProgress(y);
-          // Header parts drift apart while the intro is pinned: stars most, treeline least.
+          // Header parts drift apart while the intro is pinned: ridge more, treeline less.
           layers.forEach(
             (l) =>
               (l.style.transform = `translateY(${(p * 90 * l.dataset.depth).toFixed(1)}px)`),
