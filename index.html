@@ -672,11 +672,15 @@
         // title, so the text is already rising while the stick is still travelling.
         const firstSection = intro.nextElementSibling;
         const lede = pin.querySelector(".lede");
+        // Measured against the pinned header's own height (a fixed 100svh), not the
+        // window: on phones the window grows when the toolbar slides away, and
+        // using it would pull the text up over the title.
         const fitHandoff = () => {
+          const pinH = pin.offsetHeight;
           const ledeBottom = lede.offsetTop + lede.offsetHeight;
-          const room = innerHeight - ledeBottom - 60;
+          const room = pinH - ledeBottom - 60;
           firstSection.style.marginTop =
-            -Math.max(Math.min(innerHeight * 0.5, room), 0) + "px";
+            -Math.max(Math.min(pinH * 0.5, room), 0) + "px";
         };
         fitHandoff();
         const introProgress = (y) => {
@@ -826,6 +830,13 @@
         fillSkies();
         sizeSticks();
         update();
+        // The title's typeface arrives after this runs and changes its size,
+        // so measure again once it has loaded.
+        document.fonts?.ready.then(() => {
+          fitHandoff();
+          sizeSticks();
+          update();
+        });
       }
     </script>
   </body>
