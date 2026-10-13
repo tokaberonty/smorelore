@@ -126,16 +126,6 @@
     main .pull { margin: clamp(56px, 12vh, 120px) 0; }
     main footer { margin-top: clamp(96px, 20vh, 200px); padding-bottom: 8vh; }
     [data-speed] { will-change: transform; }
-    .seeds { list-style: none; padding: 0; }
-    .seeds li {
-      padding: 10px 0;
-      border-bottom: 1px dashed var(--rule);
-      margin: 0;
-    }
-    .seeds li:last-child { border-bottom: 0; }
-    .seeds b { display: block; }
-    .seeds span { color: var(--muted); font-size: 15px; }
-    .draft { color: var(--muted); font-style: italic; }
   </style>
 </head>
 <body>
@@ -209,16 +199,6 @@
   <h2>Looking forward from the fire</h2>
   <p>The future of tech is moving fast, and a lot of it is genuinely amazing. The question around this fire isn't whether to use the new tools. It's how to use them and stay human: build with care, keep things simple, and leave the campsite better than you found it.</p>
 
-  <h2>What this could become</h2>
-  <p class="draft">Unsure yet, and that's fine. Some kindling:</p>
-  <ul class="seeds">
-    <li><b>Stories</b><span>Short tales from a career in engineering. The bug, the launch, the lesson.</span></li>
-    <li><b>Small apps</b><span>Like <a href="/math-facts/">Math Facts</a>. Little tools, made carefully, that each do one thing.</span></li>
-    <li><b>Field notes</b><span>Observations from the trail and the terminal, side by side.</span></li>
-    <li><b>An art project</b><span>Something where code is the medium and the campfire is the subject. A generative fire that grows as stories are added?</span></li>
-    <li><b>An idea log</b><span>The endless ideas, written down as sparks. Most will float off. A few will catch.</span></li>
-  </ul>
-
   <h2>Pull up a log</h2>
   <p>For now it's just this page and a fire. More to come.</p>
 
@@ -252,10 +232,7 @@
       });
     };
 
-    // Content: a few elements float slightly as they pass the middle of the screen.
-    document.querySelectorAll('.seeds li').forEach((li, i) => {
-      li.dataset.speed = (0.02 + (i % 3) * 0.015).toFixed(3);
-    });
+    // Content: the pull quote floats slightly as it passes the middle of the screen.
     const allFloaters = document.querySelectorAll('[data-speed]');
 
     let ticking = false;
